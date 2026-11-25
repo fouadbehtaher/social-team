@@ -1,0 +1,21 @@
+# UNTESTED TEMPLATE. Never run by the author. Read deploy/README.md first. No secret is stored in this file.
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]            # the only published ports
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "caddy_data:/data"]
+    depends_on: [n8n]
+  n8n:
+    image: docker.n8n.io/n8nio/n8n          # pin a tested tag before real use
+    restart: unless-stopped
+    expose: ["5678"]                        # reachable only from Caddy, not published to the host
+    environment:
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://${N8N_HOST}/
+      - GENERIC_TIMEZONE=${TZ:-UTC}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=true   # keep true: the header-auth workflow does not read $env
+    volumes: ["n8n_data:/home/node/.n8n"]
+volumes: {caddy_data: {}, n8n_data: {}}

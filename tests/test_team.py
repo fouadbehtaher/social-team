@@ -870,3 +870,48 @@ class VideoGate(unittest.TestCase):
         st = Store(out + "/team.db"); tok = open(review.init_token(out)).read().strip(); review.stamp(st, iid); review.approve(st, out, iid, tok)
         st.db.execute("UPDATE items SET draft=? WHERE id=?", (json.dumps({**json.loads(st.get(iid)["draft"]), "text": "edited after approval"}), iid)); st.db.commit(); st.db.close() if hasattr(st.db, "close") else None
         r = run("video-export", "--id", iid, "--out", out + "/x.mp4"); self.assertEqual(r.returncode, 1); self.assertIn("VIDEO REFUSED", r.stdout); self.assertFalse(os.path.exists(out + "/x.mp4"))
+
+class Preflight(unittest.TestCase):
+    def _run(self, env, **kw):
+        from socialteam import preflight
+        d = tempfile.mkdtemp(); os.chmod(d, 0o700)
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        rows = preflight.check(env=env, out_dir=d, repo_root=root, mem_gb=kw.get("mem", 8), free_gb=50, which=lambda t: "/bin/" + t)
+        return {r["check"]: r for r in rows}, d
+    def test_clean_config_has_no_fail_and_never_prints_a_secret(self):
+        secret = "s3cretvalue-0123456789-abcdefgh"
+        rows, _ = self._run({"N8N_WEBHOOK_URL": "https://n8n.example.org/webhook/x", "N8N_AUTH_HEADER": "X-ST-Auth: " + secret, "XAI_API_KEY": "xai-" + "a" * 30})
+        self.assertFalse([r for r in rows.values() if r["level"] == "FAIL"])
+        self.assertNotIn(secret, json.dumps(rows)); self.assertNotIn("xai-aaaa", json.dumps(rows))
+    def test_bad_n8n_config_fails(self):
+        for env in ({"N8N_WEBHOOK_URL": "http://n8n.example.org/w", "N8N_AUTH_HEADER": "X: " + "a" * 30},        # plain http, not loopback
+                    {"N8N_WEBHOOK_URL": "https://u:p@n8n.example.org/w", "N8N_AUTH_HEADER": "X: " + "a" * 30},  # credentials in the URL
+                    {"N8N_WEBHOOK_URL": "https://n8n.example.org/w", "N8N_AUTH_HEADER": "just-a-value"},         # no header name
+                    {"N8N_WEBHOOK_URL": "https://n8n.example.org/w", "N8N_AUTH_HEADER": "X: changeme"}):          # placeholder / short
+            rows, _ = self._run(env); self.assertTrue([r for r in rows.values() if r["level"] == "FAIL"], env)
+    def test_review_host_must_be_loopback_and_token_must_be_private(self):
+        rows, d = self._run({"ST_REVIEW_HOST": "0.0.0.0"}); self.assertEqual(rows["review_host"]["level"], "FAIL")
+        open(d + "/.approval_token", "w").write("x"); os.chmod(d + "/.approval_token", 0o644)
+        from socialteam import preflight
+        r = {x["check"]: x for x in preflight.check(env={}, out_dir=d, mem_gb=8, free_gb=50, which=lambda t: "/bin/" + t)}
+        self.assertEqual(r["approval_token"]["level"], "FAIL")
+        os.chmod(d + "/.approval_token", 0o600)
+        r = {x["check"]: x for x in preflight.check(env={}, out_dir=d, mem_gb=8, free_gb=50, which=lambda t: "/bin/" + t)}
+        self.assertEqual(r["approval_token"]["level"], "OK")
+    def test_low_memory_warns_and_no_model_key_is_reported_as_mock_only(self):
+        rows, _ = self._run({}, mem=1.9); self.assertEqual(rows["memory"]["level"], "WARN"); self.assertIn("MOCK", rows["model"]["detail"])
+
+class DeployTemplates(unittest.TestCase):
+    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    def test_headerauth_workflow_is_wired_and_holds_no_secret_or_env_access(self):
+        raw = open(self.ROOT + "/docs/n8n/handoff-workflow.headerauth.UNTESTED.json").read(); wf = json.loads(raw)
+        names = {n["name"]: n for n in wf["nodes"]}
+        self.assertEqual(names["Webhook"]["parameters"]["authentication"], "headerAuth"); self.assertEqual(wf["active"], False)
+        self.assertEqual(wf["connections"]["Webhook"]["main"][0][0]["node"], "Respond"); self.assertIn("Respond", names)
+        self.assertNotIn("$env", raw); self.assertNotIn("jsCode", raw)                              # no Code node, no env access
+        self.assertEqual(names["Webhook"]["credentials"]["httpHeaderAuth"]["id"], "REPLACE_AFTER_IMPORT")   # a credential reference, never a value
+    def test_compose_publishes_only_caddy_and_keeps_env_access_blocked(self):
+        c = open(self.ROOT + "/deploy/docker-compose.yml").read()
+        self.assertIn('ports: ["80:80", "443:443"]', c); self.assertEqual(c.count("ports:"), 1)    # n8n uses expose, not ports
+        self.assertIn("N8N_BLOCK_ENV_ACCESS_IN_NODE=true", c); self.assertNotRegex(c, r"(?i)(password|secret|apikey)\s*[:=]\s*\S{8,}")
+        self.assertIn("path /webhook/*", open(self.ROOT + "/deploy/Caddyfile").read())

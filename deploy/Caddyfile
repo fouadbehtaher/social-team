@@ -1,0 +1,7 @@
+# UNTESTED TEMPLATE. {$N8N_HOST} must resolve to this server before Caddy can get a certificate.
+{$N8N_HOST} {
+    # expose only what callers need: the webhook path. The editor UI stays unreachable from the internet.
+    @webhook path /webhook/*
+    reverse_proxy @webhook n8n:5678
+    respond "not found" 404
+}

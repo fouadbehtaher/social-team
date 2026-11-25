@@ -33,6 +33,9 @@ elif cmd == "export-traces":   # dry run unless --send; metadata only
     from . import exports
     pl = exports.trace_otlp(st); print(json.dumps(exports.send_traces(pl, os.environ.get("LANGFUSE_URL", "https://localhost"), os.environ.get("LANGFUSE_PUBLIC_KEY"), os.environ.get("LANGFUSE_SECRET_KEY"), send="--send" in sys.argv)))
     if "--save" in sys.argv: json.dump(pl, open(f"{OUT}/traces_otlp.json", "w")); print("saved", f"{OUT}/traces_otlp.json")
+elif cmd == "preflight":     # deploy-readiness check: config only, no network, no secrets printed
+    from . import preflight
+    sys.exit(preflight.main(OUT))
 elif cmd == "n8n-handoff":    # dry run unless --send
     from . import exports
     print(json.dumps(exports.send_n8n(exports.n8n_payload(f"{OUT}/approved_export.json"), os.environ.get("N8N_WEBHOOK_URL", "https://localhost"), os.environ.get("N8N_AUTH_HEADER"), send="--send" in sys.argv)))

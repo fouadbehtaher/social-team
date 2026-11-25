@@ -1,0 +1,63 @@
+{
+ "name": "social-team-handoff-headerauth",
+ "active": false,
+ "nodes": [
+  {
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "social-team",
+    "authentication": "headerAuth",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "id": "n1",
+   "name": "Webhook",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    0
+   ],
+   "webhookId": "st-webhook-2",
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "REPLACE_AFTER_IMPORT",
+     "name": "social-team webhook header"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "respondWith": "json",
+    "responseBody": "={{ JSON.stringify({received: (($json.body||{}).items||[]).length, note: 'drafts only: nothing is published by this workflow'}) }}",
+    "options": {
+     "responseCode": 200
+    }
+   },
+   "id": "n2",
+   "name": "Respond",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    300,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Webhook": {
+   "main": [
+    [
+     {
+      "node": "Respond",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1"
+ }
+}

@@ -19,4 +19,4 @@ This repository has no LICENSE file yet. Until its owner picks one, the code is 
 - Remotion 4 (npm, `video/`): custom license, free for individuals, for-profit organisations up to 3 employees and non-profits (remotion.dev/docs/license/pricing). Not vendored. Check scope before business use.
 - fonttools (MIT): font glyph coverage check for Arabic cards. Noto Kufi Arabic (OFL) is used from the system font directory, not shipped.
 - Vendored playbooks (MIT): coreyhaines31/marketingskills and pavelhov/social-media-skills, with their LICENSE files, pinned in playbooks/SOURCES.md.
-- n8n (Sustainable Use License), Postiz (AGPL-3.0 per its repo, unverified here), TryPost, Metabase (AGPL), Langfuse, ComfyUI (GPL): only talked to over HTTP or exported to, never bundled.
+- n8n (Sustainable Use License), Postiz (AGPL-3.0: its repo LICENSE file was fetched in full on 2026-11-25 (34 KB; start, end and size checked as the standard AGPL v3 text, not read line by line); no other terms checked), TryPost, Metabase (AGPL), Langfuse, ComfyUI (GPL): only talked to over HTTP or exported to, never bundled.

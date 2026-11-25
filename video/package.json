@@ -1,0 +1,2 @@
+{"name":"social-team-video","private":true,"description":"Remotion 9:16 clip from APPROVED text. License: remotion.dev/docs/license/pricing (free for individuals, for-profit up to 3 employees, non-profits). Verify scope before business use.",
+ "dependencies":{"remotion":"*","@remotion/cli":"*","@remotion/bundler":"*","@remotion/renderer":"*","react":"19","react-dom":"19"}}

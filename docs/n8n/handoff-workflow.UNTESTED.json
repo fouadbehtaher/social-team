@@ -1,0 +1,146 @@
+{
+ "name": "social-team-handoff",
+ "active": false,
+ "nodes": [
+  {
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "social-team",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "id": "n1",
+   "name": "Webhook",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    0
+   ],
+   "webhookId": "st-webhook-1"
+  },
+  {
+   "parameters": {
+    "jsCode": "const h=$input.first().json.headers||{};\nconst ok=h['x-st-auth']===$env['ST_N8N_SECRET'];\nconst items=((($input.first().json.body)||{}).items||[]);\nreturn [{json:{ok,received_items:ok?items.length:0,ids:ok?items.map(i=>i.id):[],note:'MOCK TEST: nothing published'}}];"
+   },
+   "id": "n2",
+   "name": "Check",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    300,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "strict",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ $json.ok }}",
+       "rightValue": true,
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "n3",
+   "name": "Authorized?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    600,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "json",
+    "responseBody": "={{ JSON.stringify($json) }}",
+    "options": {
+     "responseCode": 200
+    }
+   },
+   "id": "n4",
+   "name": "OK 200",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    900,
+    -80
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "json",
+    "responseBody": "{\"error\":\"unauthorized\"}",
+    "options": {
+     "responseCode": 401
+    }
+   },
+   "id": "n5",
+   "name": "Unauthorized 401",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    900,
+    80
+   ]
+  }
+ ],
+ "connections": {
+  "Webhook": {
+   "main": [
+    [
+     {
+      "node": "Check",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Check": {
+   "main": [
+    [
+     {
+      "node": "Authorized?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Authorized?": {
+   "main": [
+    [
+     {
+      "node": "OK 200",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Unauthorized 401",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {}
+}

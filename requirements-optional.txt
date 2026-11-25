@@ -1,0 +1,1 @@
+crawl4ai==0.9.6   # optional: check-draft --extra-source fallback fetcher; run crawl4ai-setup or use system Chrome (ST_CHROME_CHANNEL)

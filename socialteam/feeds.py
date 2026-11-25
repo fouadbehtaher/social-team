@@ -21,6 +21,8 @@ def parse_kev(text, today, days=14, limit=10):
     for v in sorted(d["vulnerabilities"], key=lambda x: x["dateAdded"], reverse=True):
         if v["dateAdded"] < cutoff or len(out) >= limit: break
         summary = f"{v['vulnerabilityName']}. {v['shortDescription']} Vendor/product: {v['vendorProject']} {v['product']}. Required action: {v['requiredAction']}"
+        summary += (f" CISA catalog meaning: inclusion in the Known Exploited Vulnerabilities catalog means CISA has reliable evidence of exploitation in the wild (https://www.cisa.gov/known-exploited-vulnerabilities)."
+                    f" Due date for U.S. federal agencies: {v.get('dueDate', 'not stated')}. Known ransomware campaign use: {v.get('knownRansomwareCampaignUse', 'not stated')}.")
         out.append({"id": ("cisa-kev", v["cveID"]), "source": "cisa-kev", "title": f"{v['cveID']}: {v['vulnerabilityName']} (added to CISA KEV {v['dateAdded']})",
                     "url": SOURCES["cisa-kev"]["page"], "published": v["dateAdded"], "updated": None, "summary": summary, "kev_catalog_version": d.get("catalogVersion")})
     return out

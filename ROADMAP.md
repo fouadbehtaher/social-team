@@ -1,7 +1,7 @@
 # Roadmap
-Done: feeds, grounding, SSRF-safe fetch, budget ledger, six role prompts with schema and claim checks, local review page, hash-bound approval token, resume, offline tests.
+Done: feeds, grounding, SSRF-safe fetch, budget ledger, six role prompts with schema and claim checks, local review page, hash-bound approval token, per-role checkpoints, strict stage-by-stage mode, offline tests.
 Next, in order:
-1. Run all roles on real model output and read the strategist, writer and designer results. This has not happened yet.
+1. Get one real item through strategist, writer, designer and scheduler and read the output. The last live strategist attempt timed out; the cause is unknown (upstream slowness is a guess). Needs a model route that answers reliably.
 2. Measure retry rate and schema failure rate on a real model; adjust prompts or validators from the logged failures.
 3. Pin transitive dependencies (a lock file); add CI that runs the offline tests.
 4. Add a publishing adapter per platform behind the approval gate. None exists.

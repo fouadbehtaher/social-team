@@ -37,6 +37,8 @@ def verify(url, **kw):
 NUM = re.compile(r"\b\d[\d.,]*\b")
 def check_claims(draft_text, evidence):
     """Every number/version in the draft must appear in the evidence; no source = fail. Returns problems."""
+    from . import lang
+    draft_text = re.sub(r"(?<=[\u0600-\u06FF])(?=\d)|(?<=\d)(?=[\u0600-\u06FF])", " ", lang.normalize(draft_text)) if lang.is_arabic(draft_text) else draft_text   # Arabic-Indic digits and diacritics must not hide a number from the source check
     problems = []
     src = evidence.title + " " + evidence.excerpt + " " + (evidence.published or "")
     for n in NUM.findall(draft_text):

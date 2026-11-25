@@ -8,9 +8,9 @@ PLATFORMS = ("linkedin", "medium", "tiktok", "x")
 TRANSITIONS = {
     "LEAD": {"VERIFIED", "REJECTED_LEAD"},
     "VERIFIED": {"DRAFTED"},
-    "DRAFTED": {"PENDING_REVIEW", "DRAFT_FAILED"},
+    "DRAFTED": {"PENDING_REVIEW", "DRAFT_FAILED", "VERIFIED"},   # DRAFTED/PENDING_REVIEW -> VERIFIED only via `recheck`, when saved output fails newer checks
     "DRAFT_FAILED": {"DRAFTED"},
-    "PENDING_REVIEW": {"APPROVED", "REJECTED"},
+    "PENDING_REVIEW": {"APPROVED", "REJECTED", "VERIFIED"},
 }
 
 def key(*parts: str) -> str:

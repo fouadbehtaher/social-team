@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS metrics(post_id TEXT, platform TEXT, date TEXT, impre
 """
 class Store:
     def __init__(self, path):
-        self.db = sqlite3.connect(path); self.db.row_factory = sqlite3.Row; self.db.executescript(SCHEMA)
+        self.db = sqlite3.connect(path, check_same_thread=False); self.db.row_factory = sqlite3.Row; self.db.executescript(SCHEMA)
     def event(self, node, item_id=None, **detail):
         self.db.execute("INSERT INTO events(ts,item_id,node,detail) VALUES(?,?,?,?)", (time.time(), item_id, node, json.dumps(detail))); self.db.commit()
     def add_lead(self, id_, platform, title, url, meta=None):

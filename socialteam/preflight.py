@@ -37,7 +37,7 @@ def check(env=None, out_dir="out", repo_root=".", py=None, mem_gb="auto", free_g
     # review page must stay local
     host = env.get("ST_REVIEW_HOST")
     if host and host not in ("127.0.0.1", "localhost"): add("FAIL", "review_host", "the review page must bind loopback only")
-    else: add("OK", "review_host", "review page binds 127.0.0.1 only (reach it over an SSH tunnel; on a phone-only setup approve through the chat instead)")
+    else: add("OK", "review_host", "review page binds 127.0.0.1 only (reach it over an SSH tunnel; no phone-only approval path exists yet)")
     # files
     tok = os.path.join(out_dir, ".approval_token")
     if os.path.exists(tok):
@@ -57,7 +57,7 @@ def check(env=None, out_dir="out", repo_root=".", py=None, mem_gb="auto", free_g
         add("OK" if mem >= 3.5 else "WARN", "memory", "%.1f GB total; n8n plus Chrome together are unproven under 4 GB" % mem)
     fr = free_gb if free_gb is not None else (shutil.disk_usage(out_dir if os.path.isdir(out_dir) else ".").free / 1073741824)
     add("OK" if fr >= 20 else "WARN", "disk", "%.0f GB free (30+ GB advised with Docker images)" % fr)
-    for tool, why in (("node", "Remotion video export and n8n (Node 22+)"), ("google-chrome", "Crawl4AI/Remotion (or set ST_CHROME_CHANNEL)")):
+    for tool, why in (("node", "Remotion video export; n8n 2.49.6 requires Node >=24 (observed: refused to start on Node 22)"), ("google-chrome", "Crawl4AI/Remotion (or set ST_CHROME_CHANNEL)")):
         add("OK" if which(tool) or (tool == "google-chrome" and (which("chromium") or env.get("ST_CHROME_CHANNEL"))) else "WARN", tool, ("found" if which(tool) else "not on PATH") + "; used for " + why)
     return r
 

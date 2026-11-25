@@ -41,3 +41,4 @@ Real results on the instance, from logs seen during the run. The logs and the n8
 ### Offline fixes made after the trial (NOT verified on AWS or on n8n)
 - `send_n8n` now returns `{status, ok: false, rejected: true|false}` for an HTTP error instead of a traceback (unit tested with a faked transport).
 - `docs/n8n/handoff-workflow.UNTESTED.json`: a workflow that answers 401 through a Respond-to-Webhook node. It has never been imported into n8n; node parameters may need adjusting.
+- `docs/n8n/handoff-workflow.headerauth.UNTESTED.json` (the file name keeps UNTESTED because it covers more than was checked): the handoff contract alone ran once on a local n8n 2.49.6 (Node 24.22.3): a synthetic `n8n-handoff` payload got HTTP 200, a wrong or missing header got 403. Not checked: Docker, Caddy, HTTPS, a public host, other n8n versions, the full pipeline, any publish step. Details and the limits of that run: docs/N8N_HEADERAUTH_ACCEPTANCE.md.

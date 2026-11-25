@@ -6,6 +6,8 @@ trend scout, strategist, writer, designer, scheduler, analyst.
 **It never publishes.** It drafts, checks claims against fetched sources, renders an image card, and queues items in a local HTML review page.
 A human approves each item with a local token. Approval is bound to a content hash.
 
+![social-team pipeline](docs/images/social-team-pipeline.png)
+
 ## Status (read this first)
 The checks below are heuristics: every number and the source URL in a draft must appear in the fetched source text, and a few claim patterns are blocked. They do not verify that a statement is true or complete. A human must review every item.
 
@@ -13,7 +15,12 @@ The checks below are heuristics: every number and the source URL in a draft must
 
 **Run live (partial):** on public feeds with a free OpenRouter model, the trend-scout step produced ratings for 3 real CISA KEV items. A later live strategist step for one item failed: two earlier strategist responses were rejected by validation (the raw text was not kept then), and the latest attempt timed out after 90 seconds with no response. No strategist, writer, designer or scheduler output has been reviewed yet. Draft quality is unproven.
 
-**Not built:** publishing to any platform. This project has no platform publishing integrations; drafts are for a human to post. The paid Grok provider path has not been run (it needs prepaid xAI credits). "Primary source" in this code means only "from an allowlisted official host". It does not mean the publisher's claims are verified.
+**Not built:** publishing to any platform. The only outbound handoff is a drafts-only adapter (see `publish-drafts` below), dry run by default. The n8n handoff was run once against a local n8n 2.49.6 with a synthetic approved item (see docs/N8N_HEADERAUTH_ACCEPTANCE.md); the Postiz and TryPost drafts adapters have never been run against a live instance. Drafts are for a human to post. The paid Grok provider path has not been run (it needs prepaid xAI credits). "Primary source" in this code means only "from an allowlisted official host". It does not mean the publisher's claims are verified.
+
+## Review page (test fixture)
+The local review page with a fixed TEST FIXTURE item, before and after approval. The text is written by the build, not by a model, and is not a real post. Approving records a hash and publishes nothing.
+
+![Local review queue with a test fixture, pending and approved](docs/review-test-path.png)
 
 ## What the model is asked to do (traced from `socialteam/pipeline.py`)
 One model, six separate prompts. These are not six autonomous agents.
